@@ -1,41 +1,74 @@
-# 🚀 SciML Aerospace Simulator: De la EDO al Reporte Automatizado
+I will now draft a professional `README.md` for the `gemini-sciml-rocket-sim` repository, incorporating the mathematical framework, data pipeline architecture, and comparative efficiency analysis as requested.
 
-Este proyecto es un ecosistema de simulación numérica diseñado para modelar la dinámica de vuelo de cohetes desde el ecuador terrestre. Integra la resolución de **Ecuaciones Diferenciales Ordinarias (EDOs)** mediante un motor Runge-Kutta de 4to orden (RK4) con un pipeline de análisis automatizado mediante **Gemini CLI**.
+```markdown
+# gemini-sciml-rocket-sim
 
-## 📊 Propósito del Proyecto
-El objetivo es generar datos sintéticos de alta fidelidad (*Ground Truth*) para comparar tres escenarios de vuelo:
-1.  **Modelo Ideal:** Lanzamiento sin resistencia atmosférica (vuelo balístico puro).
-2.  **Modelo Realista:** Incorporación de resistencia atmosférica (Drag) no lineal.
-3.  **Modelo de Inserción Orbital:** Implementación de una maniobra de cabeceo (*Gravity Turn*) para maximizar la velocidad tangencial.
+![Python](https://img.shields.io/badge/Python-3.8+-blue?logo=python&logoColor=white)
+![Bash](https://img.shields.io/badge/Bash-Script-green?logo=gnu-bash&logoColor=white)
+![Gemini CLI](https://img.shields.io/badge/Gemini_CLI-AI_Auditor-orange?logo=google-gemini&logoColor=white)
+![License](https://img.shields.io/badge/License-MIT-yellow.svg)
 
+**A High-Fidelity Synthetic Data Generator for Scientific Machine Learning (SciML) and PINNs.**
 
+## Abstract
 
-## 🛠️ Arquitectura Técnica
+This repository provides a robust framework for generating multi-stage aerospace telemetry using numerical integration of Ordinary Differential Equations (ODEs). Designed as a "Ground Truth" engine for Physics-Informed Neural Networks (PINNs), the system simulates rocket dynamics including atmospheric drag, gravity turns, and mass depletion. A unique feature of this pipeline is the integration of **Gemini CLI**, which acts as an AI Mission Auditor, performing heuristic analysis on the generated telemetry to validate orbital efficiency and mission viability.
 
-El sistema está construido bajo principios de **modularidad** y **automatización**:
+## Mathematical Framework
 
-* **`motor_integracion.py`**: Implementación vectorial del método **Runge-Kutta (RK4)** en Python puro. Diseñado para ser agnóstico al problema, permitiendo integrar sistemas de cualquier dimensión.
-* **`simulador.py`**: Motor físico unificado que modela el empuje, la masa variable (quema de combustible), el drag atmosférico exponencial y la trigonometría del *Gravity Turn*.
-* **`generar_reporte.sh`**: Orquestador en Bash que gestiona el ciclo de vida de los datos: Ejecución → Validación → Auditoría por IA.
+The core of the simulator resides in the `cinematica_universal` function, which solves a system of non-linear ODEs using a 4th-order Runge-Kutta (RK4) method. The state vector is defined as $\mathbf{s} = [x, y, v_x, v_y, m]^T$.
 
-### Formulación Matemática
-El simulador resuelve el siguiente sistema de EDOs acopladas:
+### Governing Equations
 
-$$\frac{d\vec{v}}{dt} = \frac{\vec{T}(\theta, t)}{m(t)} + \vec{g} - \frac{\vec{F}_d(\rho, v)}{m(t)}$$
+The dynamics are governed by the following system:
 
-Donde la densidad atmosférica $\rho$ decae exponencialmente con la altitud $y$:
-$$\rho(y) = \rho_0 e^{-y/H}$$
+$$
+\begin{cases} 
+\dot{x} = v_x \\
+\dot{y} = v_y \\
+\dot{v}_x = \frac{T(t) \cos(\theta)}{m} + a_{x, drag} \\
+\dot{v}_y = \frac{T(t) \sin(\theta)}{m} - g + a_{y, drag} \\
+\dot{m} = \dot{m}_{thrust}
+\end{cases}
+$$
 
-## 🚀 Instalación y Uso
+Where:
+*   **Thrust ($T$):** Piecewise function representing a two-stage propulsion system.
+*   **Atmospheric Drag ($a_{drag}$):** Modeled using the exponential barometric formula:
+    $$\rho(y) = \rho_0 e^{-y/H_{scale}}$$
+    $$F_{drag} = \frac{1}{2} \rho(y) v^2 C_d A$$
+*   **Gravity Turn ($\theta$):** A time-dependent pitch maneuver $\theta(t)$ that transitions from vertical ascent ($\pi/2$) to horizontal orbital injection ($0$).
 
-### Requisitos
-* Python 3.x
-* Node.js & Gemini CLI (`npm install -g @google/gemini-cli`)
-* Entorno Linux/ChromeOS (Crostini)
+## Data Pipeline Architecture
 
-### Ejecución del Pipeline Completo
-Para ejecutar todas las simulaciones y generar el reporte técnico analizado por IA, simplemente corre:
+The project employs a three-layer architecture designed for Scientific ML workflows:
 
+1.  **Ground Truth Generation (`simulador.py` & `motor_integracion.py`):** A library-independent RK4 engine calculates high-precision trajectories. It produces raw telemetry in CSV format, serving as the training target for PINNs.
+2.  **Orchestration (`generar_reporte.sh`):** A shell pipeline that automates multiple physical scenarios: Ideal (Vacuum), Atmospheric (Drag), and Orbital (Gravity Turn).
+3.  **AI Auditing (Gemini CLI):** The `gemini` agent ingests the multi-scenario CSV data. It performs cross-validation, calculating Delta-v gains and energy loss coefficients, effectively acting as a "Mission Control" analyst that interprets numerical data into structural insights.
+
+## Comparative Analysis: Gravity Turn vs. Vertical Ascent
+
+Based on the implemented physics, the simulator demonstrates the following efficiencies:
+
+*   **Gravity Turn:** By initiating a pitch maneuver (default at $t=20s$), the vehicle utilizes gravity to rotate its velocity vector. This minimizes "Gravity Losses" by converting vertical potential energy into the horizontal kinetic energy ($v_x$) required for stable orbits. The code initializes $v_x$ with Earth's tangential velocity ($V_{EQ} \approx 465.1$ m/s) to simulate equatorial launch assists.
+*   **Vertical Ascent:** In simulations without the `--gravity_turn` flag, the vehicle maintains $\theta = \pi/2$. While this reaches higher peak altitudes, the $v_x$ remains static, resulting in a zero-eccentricity "fall-back" trajectory, proving inefficient for orbital deployment as it fails to achieve the necessary tangential velocity.
+
+## Getting Started
+
+### Prerequisites
+- Python 3.x
+- Gemini CLI (configured with API access)
+
+### Execution
+Run the unified pipeline to generate synthetic data and the AI-powered technical report:
 ```bash
 chmod +x generar_reporte.sh
 ./generar_reporte.sh
+```
+
+The results will be available in `reporte_vuelo.md`, providing a deep-dive into the flight dynamics and stage-separation efficiency.
+
+---
+**Jefferson Conza**  
+*Mathematics Student & ML Engineer*
