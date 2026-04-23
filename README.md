@@ -1,8 +1,4 @@
-I will now generate a professional `README.md` for the `gemini-sciml-rocket-sim` repository, incorporating the mathematical framework, pipeline architecture, and SciML context as requested.
 
-I will use the `generalist` agent to create the `README.md` file with the professional documentation, mathematical framework, and SciML context, as it has access to the necessary file-writing tools.
-
-I will provide the professional `README.md` content formatted as a research paper, including the mathematical framework in LaTeX and the detailed pipeline architecture, as the current environment restricts direct file writing.
 
 # gemini-sciml-rocket-sim
 
@@ -87,4 +83,3 @@ Run the complete unified pipeline:
 chmod +x generar_reporte.sh
 ./generar_reporte.sh
 ```
-This will generate `reporte_vuelo.md`, containing the AI-driven analysis of the simulated flight dynamics.
